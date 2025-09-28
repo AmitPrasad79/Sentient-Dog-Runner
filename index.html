@@ -1,165 +1,125 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dog Runner Game</title>
-  <style>
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: #f9f9f9;
-      font-family: Arial, sans-serif;
+// main.js
+
+const canvas = document.querySelector("canvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = 800;
+canvas.height = 200;
+
+let gravity = 0.6;
+let gameSpeed = 2;        // starting speed
+let speedIncrease = 0.002; // how fast the game speeds up
+
+let score = 0;
+let gameOver = false;
+
+// Dog player
+const dog = {
+  x: 50,
+  y: 150,
+  width: 40,
+  height: 40,
+  dy: 0,
+  jumping: false,
+};
+
+const dogImg = new Image();
+dogImg.src = "dog.png"; // <-- make sure dog.png is in same folder
+
+// Obstacles
+let obstacles = [];
+
+class Obstacle {
+  constructor() {
+    this.width = 20;
+    this.height = 30;
+    this.x = canvas.width;
+    this.y = canvas.height - this.height - 20;
+  }
+
+  update() {
+    this.x -= gameSpeed;
+    this.draw();
+  }
+
+  draw() {
+    ctx.fillStyle = "brown";
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+  }
+}
+
+function spawnObstacle() {
+  obstacles.push(new Obstacle());
+}
+
+function jump() {
+  if (!dog.jumping) {
+    dog.dy = -10;
+    dog.jumping = true;
+  }
+}
+
+// Input
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space" || e.code === "ArrowUp") {
+    jump();
+  }
+});
+
+canvas.addEventListener("click", jump);
+
+// Main update loop
+function update() {
+  if (gameOver) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Dog physics
+  dog.y += dog.dy;
+  dog.dy += gravity;
+
+  if (dog.y + dog.height >= canvas.height - 20) {
+    dog.y = canvas.height - dog.height - 20;
+    dog.dy = 0;
+    dog.jumping = false;
+  }
+
+  // Draw dog
+  ctx.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height);
+
+  // Obstacles
+  if (Math.random() < 0.01) {
+    spawnObstacle();
+  }
+
+  for (let i = 0; i < obstacles.length; i++) {
+    obstacles[i].update();
+
+    // Collision detection
+    if (
+      dog.x < obstacles[i].x + obstacles[i].width &&
+      dog.x + dog.width > obstacles[i].x &&
+      dog.y < obstacles[i].y + obstacles[i].height &&
+      dog.y + dog.height > obstacles[i].y
+    ) {
+      gameOver = true;
+      alert("Game Over! Final Score: " + score);
     }
-    canvas {
-      background: #fff;
-      border: 2px solid #444;
-      margin-top: 20px;
-    }
-    #gameOverScreen {
-      position: absolute;
-      top: 40%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0,0,0,0.85);
-      color: white;
-      padding: 20px 40px;
-      text-align: center;
-      border-radius: 12px;
-      display: none;
-    }
-    #restartBtn {
-      margin-top: 15px;
-      padding: 8px 20px;
-      border: none;
-      border-radius: 6px;
-      background: #ff4b4b;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    #restartBtn:hover {
-      background: #ff2a2a;
-    }
-    #twitter {
-      margin-top: 10px;
-    }
-    #twitter a {
-      color: #1DA1F2;
-      text-decoration: none;
-      font-weight: bold;
-    }
-  </style>
-</head>
-<body>
-  <h2>🐶 Sentient Dog Runner</h2>
-  <p>Press <b>Space</b> to Jump</p>
-  
-  <canvas id="gameCanvas" width="600" height="200"></canvas>
-  <p id="scoreText">Score: 0</p>
-  <p id="twitter">Made by <a href="https://twitter.com/YOUR_HANDLE" target="_blank">@YOUR_HANDLE</a></p>
+  }
 
-  <div id="gameOverScreen">
-    <h2>Game Over!</h2>
-    <p id="finalScore">Score: 0</p>
-    <button id="restartBtn">Restart</button>
-  </div>
+  // Increase difficulty
+  gameSpeed += speedIncrease;
 
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-    const scoreText = document.getElementById("scoreText");
-    const gameOverScreen = document.getElementById("gameOverScreen");
-    const finalScore = document.getElementById("finalScore");
-    const restartBtn = document.getElementById("restartBtn");
+  // Score
+  score++;
+  ctx.fillStyle = "black";
+  ctx.font = "16px Arial";
+  ctx.fillText("Score: " + score, 10, 20);
 
-    // Load dog image (replace with your sprite if you have)
-    const dogImg = new Image();
-    dogImg.src = "assets/dog.png";  // <-- replace with your uploaded dog sprite path
+  requestAnimationFrame(update);
+}
 
-    let dog, obstacles, score, gameSpeed, gravity, isGameOver;
-
-    function initGame() {
-      dog = { x: 30, y: 150, width: 30, height: 30, velocityY: 0, jumpPower: -8 };
-      obstacles = [];
-      score = 0;
-      gameSpeed = 3;
-      gravity = 0.4;
-      isGameOver = false;
-      gameOverScreen.style.display = "none";
-      loop();
-    }
-
-    document.addEventListener("keydown", (e) => {
-      if (e.code === "Space" && dog.y >= 150) {
-        dog.velocityY = dog.jumpPower;
-      }
-    });
-
-    function spawnObstacle() {
-      const width = 20;
-      obstacles.push({ x: canvas.width, y: 160, width, height: 40 });
-    }
-
-    function update() {
-      if (isGameOver) return;
-
-      // Dog physics
-      dog.velocityY += gravity;
-      dog.y += dog.velocityY;
-      if (dog.y > 150) dog.y = 150;
-
-      // Obstacles
-      if (Math.random() < 0.02) spawnObstacle();
-      obstacles.forEach(o => o.x -= gameSpeed);
-      obstacles = obstacles.filter(o => o.x + o.width > 0);
-
-      // Collision
-      for (let o of obstacles) {
-        if (
-          dog.x < o.x + o.width &&
-          dog.x + dog.width > o.x &&
-          dog.y < o.y + o.height &&
-          dog.y + dog.height > o.y
-        ) {
-          endGame();
-        }
-      }
-
-      // Score
-      score++;
-      scoreText.textContent = "Score: " + score;
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Draw dog sprite
-      ctx.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height);
-
-      // Draw obstacles
-      ctx.fillStyle = "black";
-      obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.width, o.height));
-    }
-
-    function loop() {
-      if (isGameOver) return;
-      update();
-      draw();
-      requestAnimationFrame(loop);
-    }
-
-    function endGame() {
-      isGameOver = true;
-      finalScore.textContent = "Final Score: " + score;
-      gameOverScreen.style.display = "block";
-    }
-
-    restartBtn.addEventListener("click", initGame);
-
-    // Start the first game
-    initGame();
-  </script>
-</body>
-</html>
+// Start game once dog image is loaded
+dogImg.onload = () => {
+  update();
+};
