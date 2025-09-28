@@ -1,161 +1,125 @@
-const canvas = document.getElementById("gameCanvas");
+// main.js
+
+const canvas = document.querySelector("canvas");
 const ctx = canvas.getContext("2d");
 
-// Game state
-let player, obstacles, score, highScore, gameOver;
-let obstacleSpeed, obstacleBaseSpeed, obstacleMaxSpeed, speedIncreaseRate;
+canvas.width = 800;
+canvas.height = 200;
 
-// Load dog sprite
+let gravity = 0.6;
+let gameSpeed = 2;        // starting speed
+let speedIncrease = 0.002; // how fast the game speeds up
+
+let score = 0;
+let gameOver = false;
+
+// Dog player
+const dog = {
+  x: 50,
+  y: 150,
+  width: 40,
+  height: 40,
+  dy: 0,
+  jumping: false,
+};
+
 const dogImg = new Image();
-dogImg.src = "assets/dog.png"; // make sure this is transparent PNG
+dogImg.src = "dog.png"; // <-- make sure dog.png is in same folder
 
-// Player object
-function resetPlayer() {
-    player = {
-        x: 50,
-        y: canvas.height - 100,
-        w: 60,
-        h: 60,
-        vy: 0,
-        gravity: 0.6,
-        jumpPower: -12,
-        grounded: false,
-    };
+// Obstacles
+let obstacles = [];
+
+class Obstacle {
+  constructor() {
+    this.width = 20;
+    this.height = 30;
+    this.x = canvas.width;
+    this.y = canvas.height - this.height - 20;
+  }
+
+  update() {
+    this.x -= gameSpeed;
+    this.draw();
+  }
+
+  draw() {
+    ctx.fillStyle = "brown";
+    ctx.fillRect(this.x, this.y, this.width, this.height);
+  }
 }
 
-// Reset game
-function resetGame() {
-    resetPlayer();
-    obstacles = [];
-    score = 0;
-    gameOver = false;
-    obstacleBaseSpeed = 3;       // starting speed
-    obstacleMaxSpeed = 14;       // max speed
-    obstacleSpeed = obstacleBaseSpeed;
-    speedIncreaseRate = 0.002;   // ramp up rate
+function spawnObstacle() {
+  obstacles.push(new Obstacle());
 }
 
-// Jump
 function jump() {
-    if (player.grounded && !gameOver) {
-        player.vy = player.jumpPower;
-        player.grounded = false;
-    }
-    if (gameOver) {
-        resetGame();
-    }
+  if (!dog.jumping) {
+    dog.dy = -10;
+    dog.jumping = true;
+  }
 }
 
-// Handle input
+// Input
 document.addEventListener("keydown", (e) => {
-    if (e.code === "Space" || e.code === "ArrowUp") jump();
+  if (e.code === "Space" || e.code === "ArrowUp") {
+    jump();
+  }
 });
+
 canvas.addEventListener("click", jump);
 
-// Spawn obstacles
-function spawnObstacle() {
-    const height = 40 + Math.random() * 30;
-    obstacles.push({
-        x: canvas.width,
-        y: canvas.height - height,
-        w: 30,
-        h: height,
-    });
-}
-setInterval(spawnObstacle, 1800);
-
-// Collision detection
-function checkCollision(a, b) {
-    return (
-        a.x < b.x + b.w &&
-        a.x + a.w > b.x &&
-        a.y < b.y + b.h &&
-        a.y + a.h > b.y
-    );
-}
-
-// Update game logic
+// Main update loop
 function update() {
-    if (!gameOver) {
-        // Gravity
-        player.vy += player.gravity;
-        player.y += player.vy;
+  if (gameOver) return;
 
-        if (player.y + player.h >= canvas.height) {
-            player.y = canvas.height - player.h;
-            player.vy = 0;
-            player.grounded = true;
-        }
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Increase speed gradually
-        if (obstacleSpeed < obstacleMaxSpeed) {
-            obstacleSpeed += speedIncreaseRate;
-        }
+  // Dog physics
+  dog.y += dog.dy;
+  dog.dy += gravity;
 
-        // Move obstacles
-        for (let i = obstacles.length - 1; i >= 0; i--) {
-            obstacles[i].x -= obstacleSpeed;
-            if (obstacles[i].x + obstacles[i].w < 0) {
-                obstacles.splice(i, 1);
-                score++;
-                if (!highScore || score > highScore) {
-                    highScore = score;
-                }
-            }
-        }
+  if (dog.y + dog.height >= canvas.height - 20) {
+    dog.y = canvas.height - dog.height - 20;
+    dog.dy = 0;
+    dog.jumping = false;
+  }
 
-        // Check collisions
-        for (let obs of obstacles) {
-            if (checkCollision(player, obs)) {
-                gameOver = true;
-            }
-        }
+  // Draw dog
+  ctx.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height);
+
+  // Obstacles
+  if (Math.random() < 0.01) {
+    spawnObstacle();
+  }
+
+  for (let i = 0; i < obstacles.length; i++) {
+    obstacles[i].update();
+
+    // Collision detection
+    if (
+      dog.x < obstacles[i].x + obstacles[i].width &&
+      dog.x + dog.width > obstacles[i].x &&
+      dog.y < obstacles[i].y + obstacles[i].height &&
+      dog.y + dog.height > obstacles[i].y
+    ) {
+      gameOver = true;
+      alert("Game Over! Final Score: " + score);
     }
+  }
+
+  // Increase difficulty
+  gameSpeed += speedIncrease;
+
+  // Score
+  score++;
+  ctx.fillStyle = "black";
+  ctx.font = "16px Arial";
+  ctx.fillText("Score: " + score, 10, 20);
+
+  requestAnimationFrame(update);
 }
 
-// Draw everything
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Background
-    ctx.fillStyle = "#f0f8ff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Player (dog)
-    ctx.drawImage(dogImg, player.x, player.y, player.w, player.h);
-
-    // Obstacles
-    ctx.fillStyle = "#8b4513";
-    for (let obs of obstacles) {
-        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
-    }
-
-    // Score
-    ctx.fillStyle = "black";
-    ctx.font = "18px Arial";
-    ctx.fillText("Score: " + score, 10, 25);
-
-    if (highScore) {
-        ctx.fillText("High Score: " + highScore, 10, 50);
-    }
-
-    // Game Over
-    if (gameOver) {
-        ctx.fillStyle = "red";
-        ctx.font = "32px Arial";
-        ctx.fillText("Game Over", canvas.width / 2 - 90, canvas.height / 2);
-        ctx.font = "20px Arial";
-        ctx.fillText("Press Space / Click to Restart", canvas.width / 2 - 150, canvas.height / 2 + 40);
-    }
-}
-
-// Game loop
-function gameLoop() {
-    update();
-    draw();
-    requestAnimationFrame(gameLoop);
-}
-
-// Start
-resetGame();
-gameLoop();
+// Start game once dog image is loaded
+dogImg.onload = () => {
+  update();
+};
