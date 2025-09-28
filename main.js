@@ -85,6 +85,7 @@ function rectIntersect(ax,ay,aw,ah,bx,by,bw,bh){
 
 function draw(){
   ctx.clearRect(0,0,W,H);
+
   // ground
   ctx.fillStyle = '#6b8e23';
   ctx.fillRect(0, groundY + player.h/2 + 10, W, H);
@@ -106,6 +107,7 @@ function draw(){
     ctx.fillRect(o.x, o.y - o.h, o.w, o.h);
   }
 
+  // game over overlay
   if(!running){
     ctx.fillStyle = 'rgba(0,0,0,0.6)';
     ctx.fillRect(0,0,W,H);
@@ -113,7 +115,13 @@ function draw(){
     ctx.font = '24px Arial';
     ctx.fillText('Game Over - Press R to restart', 180, 100);
   }
+
+  // >>> ADD YOUR HANDLE HERE <<<
+  ctx.fillStyle = "#555";
+  ctx.font = "14px Arial";
+  ctx.fillText("0xBalls", W - 100, H - 10);
 }
+
 
 function loop(){
   update();
