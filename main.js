@@ -1,145 +1,155 @@
-// game.js - debug-friendly minimal runner (mobile + desktop controls)
-console.log('game.js loaded');
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+resizeCanvas();
 
-const canvas = document.getElementById('gameCanvas');
-if (!canvas) {
-  console.error('ERROR: canvas element not found. Make sure index.html contains <canvas id="gameCanvas">');
+window.addEventListener("resize", resizeCanvas);
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
-const ctx = canvas && canvas.getContext ? canvas.getContext('2d') : null;
-if (!ctx) {
-  console.error('ERROR: 2d context not available.');
-}
 
-const overlayCard = document.getElementById('overlayCard');
-const overlayButton = document.getElementById('overlayButton');
-const scoreDisplay = document.getElementById('scoreDisplay');
-
-let running = false, gameOver = false;
+// Game state
+let running = false;
+let gameOver = false;
 let score = 0;
 
-// simple placeholder dog (no external image required for debug)
-const DOG = { x: 90, width: 70, height: 70, y: canvas.height - 12 - 70, vy: 0 };
-const GRAVITY = 0.9, JUMP_POWER = -16;
+// Dog
+const dogImg = new Image();
+dogImg.src = "assets/dog.png";
+const dog = {
+  x: 50,
+  width: 80,
+  height: 80,
+  y: 0,
+  vy: 0
+};
+dog.y = canvas.height - dog.height - 20;
 
-// safe function to show/hide overlay
-function showOverlay(title, text, btnText) {
-  document.getElementById('overlayTitle').innerText = title || 'Overlay';
-  document.getElementById('overlayText').innerText = text || '';
-  overlayButton.innerText = btnText || 'OK';
-  overlayCard.style.display = 'flex';
-}
-function hideOverlay() { overlayCard.style.display = 'none'; }
+const GRAVITY = 0.9;
+const JUMP_POWER = -18;
 
-// debug checks
-console.log('canvas exists?', !!canvas, 'context ok?', !!ctx);
+// Obstacles
+let obstacles = [];
+let speed = 5;
 
-// controls
-function tryJump(){
-  const groundY = canvas.height - 12 - DOG.height;
-  if (Math.abs(DOG.y - groundY) < 0.1) DOG.vy = JUMP_POWER;
-}
-function handleInput(){
+// Input (desktop + mobile)
+document.addEventListener("keydown", e => {
+  if (e.code === "Space") handleInput();
+});
+canvas.addEventListener("pointerdown", handleInput);
+document.getElementById("overlayButton").addEventListener("click", handleInput);
+
+function handleInput() {
   if (!running && !gameOver) {
     startGame();
   } else if (gameOver) {
     resetGame();
   } else {
-    tryJump();
+    jump();
   }
 }
-document.addEventListener('keydown', e => {
-  if (e.code === 'Space') {
-    e.preventDefault();
-    handleInput();
-  }
-});
-canvas.addEventListener('pointerdown', handleInput);
-overlayButton.addEventListener('click', handleInput);
 
-// simple obstacle array for debug
-let obstacles = [];
-function spawnObstacle() {
-  const h = 30 + Math.random()*40;
-  obstacles.push({ x: canvas.width + 10, y: canvas.height - 12 - h, w: 26, h: h });
+function jump() {
+  const groundY = canvas.height - dog.height - 20;
+  if (dog.y >= groundY) {
+    dog.vy = JUMP_POWER;
+  }
 }
 
-// reset state
-function resetGame(){
+function resetGame() {
   obstacles = [];
-  running = false;
-  gameOver = false;
   score = 0;
-  DOG.y = canvas.height - 12 - DOG.height;
-  DOG.vy = 0;
-  scoreDisplay.innerText = 'Score: 0';
-  showOverlay('Press SPACE or Tap to Start', 'Tap/click the canvas or press SPACE to start.', 'Start');
-  console.log('Game reset');
+  speed = 5;
+  gameOver = false;
+  running = false;
+  showOverlay("Dog Runner", "Tap anywhere to start", "Start");
 }
 
-// start
-function startGame(){
+function startGame() {
   hideOverlay();
   running = true;
-  gameOver = false;
   requestAnimationFrame(loop);
-  console.log('Game started');
 }
 
-// collision simple
-function isColliding(a,b){
-  return a.x < b.x + b.w && a.x + a.width > b.x && a.y < b.y + b.h && a.y + a.height > b.y;
-}
+function loop() {
+  if (!running) return;
 
-let frame = 0, speed = 3;
-function loop(){
-  if (!running) return; // do nothing until started
-  frame++;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // physics for dog
-  DOG.vy += GRAVITY;
-  DOG.y += DOG.vy;
-  const groundY = canvas.height - 12 - DOG.height;
-  if (DOG.y > groundY) { DOG.y = groundY; DOG.vy = 0; }
+  // Dog physics
+  dog.vy += GRAVITY;
+  dog.y += dog.vy;
+  const groundY = canvas.height - dog.height - 20;
+  if (dog.y > groundY) {
+    dog.y = groundY;
+    dog.vy = 0;
+  }
 
-  // spawn
-  if (frame % 110 === 0) spawnObstacle();
+  // Obstacles
+  if (Math.random() < 0.02) {
+    const h = 40 + Math.random() * 40;
+    obstacles.push({
+      x: canvas.width,
+      y: canvas.height - h - 20,
+      w: 30,
+      h: h
+    });
+  }
+  for (let i = obstacles.length - 1; i >= 0; i--) {
+    let o = obstacles[i];
+    o.x -= speed;
+    ctx.fillStyle = "#333";
+    ctx.fillRect(o.x, o.y, o.w, o.h);
 
-  // move obstacles
-  for (let i = obstacles.length-1;i>=0;i--){
-    obstacles[i].x -= speed;
-    if (isColliding({x:DOG.x,y:DOG.y,width:DOG.width,height:DOG.height}, obstacles[i])) {
-      console.log('Collision detected');
-      running = false;
-      gameOver = true;
-      showOverlay('Game Over', 'Final Score: ' + score, 'Restart');
-      return;
+    // Collision
+    if (
+      dog.x < o.x + o.w &&
+      dog.x + dog.width > o.x &&
+      dog.y < o.y + o.h &&
+      dog.y + dog.height > o.y
+    ) {
+      endGame();
     }
-    if (obstacles[i].x + obstacles[i].w < 0) {
-      obstacles.splice(i,1);
+
+    if (o.x + o.w < 0) {
+      obstacles.splice(i, 1);
       score++;
-      scoreDisplay.innerText = 'Score: ' + score;
     }
   }
 
-  // draw ground
-  ctx.fillStyle = '#222';
-  ctx.fillRect(0, canvas.height - 12, canvas.width, 12);
+  // Draw dog
+  ctx.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height);
 
-  // draw dog (placeholder)
-  ctx.fillStyle = '#ff8a65';
-  ctx.fillRect(DOG.x, DOG.y, DOG.width, DOG.height);
+  // Score
+  ctx.fillStyle = "black";
+  ctx.font = "24px Arial";
+  ctx.fillText("Score: " + score, 20, 40);
 
-  // draw obstacles
-  ctx.fillStyle = '#333';
-  for (let o of obstacles) ctx.fillRect(o.x, o.y, o.w, o.h);
-
-  // increase difficulty slightly
-  if (frame % 600 === 0) speed += 0.5;
+  // Speed up
+  speed += 0.001;
 
   requestAnimationFrame(loop);
 }
 
-// initial
-resetGame();
-console.log('Setup complete - open Developer Console to view logs.');
+function endGame() {
+  running = false;
+  gameOver = true;
+  showOverlay("Game Over", "Final Score: " + score, "Restart");
+}
+
+// Overlay functions
+function showOverlay(title, text, button) {
+  const overlay = document.getElementById("overlay");
+  document.getElementById("overlayTitle").innerText = title;
+  document.getElementById("overlayText").innerText = text;
+  document.getElementById("overlayButton").innerText = button;
+  overlay.style.display = "flex";
+}
+
+function hideOverlay() {
+  document.getElementById("overlay").style.display = "none";
+}
+
+// Init
+showOverlay("Dog Runner", "Tap anywhere to start", "Start");
