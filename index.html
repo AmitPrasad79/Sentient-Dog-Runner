@@ -1,43 +1,95 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>🐶 Sentient Dog Runner</title>
+  <meta charset="utf-8" />
+  <title>Sentient Dog Runner</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
     body {
-      text-align: center;
       font-family: Arial, sans-serif;
-      background: #fafafa;
+      text-align: center;
+      background: #f6f8fb;
+      margin: 0;
+      padding: 24px;
     }
+    #gameArea { display:inline-block; position:relative; }
     canvas {
-      border: 2px solid #333;
-      display: block;
-      margin: 20px auto;
-      background: white;
+      display:block;
+      background: #ffffff;
+      border: 2px solid #ddd;
+      box-shadow: 0 6px 18px rgba(30,40,60,0.06);
     }
-    #score {
-      font-size: 18px;
-      font-weight: bold;
+
+    /* overlay popup (centered black box) */
+    .overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none; /* enable clicks only on the inner card */
     }
+    .card {
+      pointer-events: auto;
+      min-width: 320px;
+      max-width: 420px;
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 22px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+    }
+    .card h2 { margin:8px 0 6px 0; font-size:22px; }
+    .card p { margin:6px 0 12px 0; font-size:18px; }
+    .btn {
+      display:inline-block;
+      padding:10px 16px;
+      border-radius:8px;
+      background:#1DA1F2;
+      color:white;
+      text-decoration:none;
+      cursor:pointer;
+      border:none;
+      font-weight:600;
+    }
+    #scoreDisplay { margin-top:12px; font-weight:700; font-size:18px; }
+
     #footer {
-      margin-top: 20px;
-      font-size: 14px;
+      margin-top:18px;
+      font-size:14px;
+      color:#222;
     }
+    #footer a { color:#1DA1F2; text-decoration:none; font-weight:700; }
   </style>
 </head>
 <body>
-  <h2>🐶 Sentient Dog Runner</h2>
-  <p>Press <b>Space</b> to Jump</p>
-  
-  <canvas id="gameCanvas" width="800" height="250"></canvas>
-  
-  <p id="score">Score: 0</p>
-  
-  <div id="footer">
-    Made with ❤️ by <a href="https://twitter.com/YourHandle" target="_blank">@YourHandle</a>
+  <h1>🐶 Sentient Dog Runner</h1>
+  <p>Press <b>SPACE</b> to start. Press SPACE to jump while playing.</p>
+
+  <div id="gameArea">
+    <canvas id="gameCanvas" width="800" height="260"></canvas>
+
+    <!-- overlay: used for initial start screen and Game Over popup -->
+    <div id="overlay" class="overlay" aria-hidden="false">
+      <div id="overlayCard" class="card">
+        <h2 id="overlayTitle">Press SPACE to Start</h2>
+        <p id="overlayText">Get ready — the dog runs slowly at first and speeds up over time.</p>
+        <div>
+          <button id="overlayButton" class="btn">Start (SPACE)</button>
+        </div>
+        <div id="overlayExtra" style="margin-top:10px; font-size:13px; opacity:0.9;">
+          Made by <a href="https://x.com/0xBalls" target="_blank" style="color:#fff;text-decoration:underline;">0xBalls</a>
+        </div>
+      </div>
+    </div>
   </div>
-  
-  <!-- Load JS file -->
-  <script src="main.js"></script>
+
+  <div id="scoreDisplay">Score: 0</div>
+  <div id="footer">Want to share? <a href="https://x.com/0xBalls" target="_blank">@0xBalls</a></div>
+
+  <!-- load game script (separate file) -->
+  <script src="game.js"></script>
 </body>
 </html>
