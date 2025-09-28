@@ -3,7 +3,7 @@ const ctx = canvas.getContext("2d");
 
 // Dog image
 const dogImg = new Image();
-dogImg.src = "assets/dog.png"; // make sure dog.png is in the same folder
+dogImg.src = "assets/dog.png"; // make sure dog.png is in same folder
 
 // Dog settings
 const dogWidth = 60;
@@ -18,23 +18,54 @@ const jumpPower = -18;
 let obstacles = [];
 const obstacleWidth = 20;
 const obstacleHeight = 40;
-const obstacleGap = 200;
 let frameCount = 0;
 
 // Score
 let score = 0;
-let gameOver = false;
 
-// Jump
+// Game state
+let gameOver = false;
+let gameStarted = false;
+
+// Speed control
+let gameSpeed = 3;
+let speedIncrease = 0.002;
+
+// Jump / Start / Restart
 document.addEventListener("keydown", function (e) {
-  if (e.code === "Space" && dogY >= canvas.height - dogHeight) {
-    velocityY = jumpPower;
+  if (e.code === "Space") {
+    if (!gameStarted) {
+      resetGame();
+      gameStarted = true;
+      requestAnimationFrame(gameLoop);
+    } else if (gameOver) {
+      resetGame();
+      gameStarted = true;
+      gameOver = false;
+      requestAnimationFrame(gameLoop);
+    } else if (dogY >= canvas.height - dogHeight) {
+      velocityY = jumpPower;
+    }
   }
 });
 
+// Reset game state
+function resetGame() {
+  dogX = 50;
+  dogY = canvas.height - dogHeight;
+  velocityY = 0;
+  obstacles = [];
+  frameCount = 0;
+  score = 0;
+  gameSpeed = 3;
+}
+
 // Main loop
 function gameLoop() {
-  if (gameOver) return;
+  if (gameOver) {
+    showGameOver();
+    return;
+  }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -57,7 +88,7 @@ function gameLoop() {
 
   for (let i = 0; i < obstacles.length; i++) {
     let obs = obstacles[i];
-    obs.x -= 6;
+    obs.x -= gameSpeed;
     ctx.fillStyle = "black";
     ctx.fillRect(obs.x, obs.y, obstacleWidth, obstacleHeight);
 
@@ -69,8 +100,6 @@ function gameLoop() {
       dogY + dogHeight > obs.y
     ) {
       gameOver = true;
-      alert("Game Over! Final Score: " + score);
-      document.location.reload();
     }
   }
 
@@ -81,7 +110,27 @@ function gameLoop() {
   score++;
   document.getElementById("score").innerText = "Score: " + score;
 
+  // Speed increase
+  gameSpeed += speedIncrease;
+
   requestAnimationFrame(gameLoop);
 }
 
-gameLoop();
+// Game Over screen
+function showGameOver() {
+  ctx.fillStyle = "rgba(0,0,0,0.5)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "white";
+  ctx.font = "30px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("Game Over!", canvas.width / 2, canvas.height / 2 - 30);
+  ctx.fillText("Final Score: " + score, canvas.width / 2, canvas.height / 2);
+  ctx.fillText("Press SPACE to Restart", canvas.width / 2, canvas.height / 2 + 40);
+}
+
+// Initial message
+ctx.fillStyle = "black";
+ctx.font = "24px Arial";
+ctx.textAlign = "center";
+ctx.fillText("Press SPACE to Start", canvas.width / 2, canvas.height / 2);
