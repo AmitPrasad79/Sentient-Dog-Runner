@@ -72,17 +72,14 @@ function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   // Dog physics
+  // Dog physics
   velocityY += gravity;
   dogY += velocityY;
+
   if (dogY > canvas.height - dogHeight) {
     dogY = canvas.height - dogHeight;
     velocityY = 0;
-    jumpForward = 0; // reset forward boost after landing
-    dogX = 50; // snap back to base
-  } else {
-    dogX += jumpForward;
-    if (dogX > 70) dogX -= 1; // slowly pull back
-  }
+}
 
   // Draw dog
   ctx.drawImage(dogImg, dogX, dogY, dogWidth, dogHeight);
