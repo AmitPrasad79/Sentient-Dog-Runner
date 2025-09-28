@@ -11,8 +11,8 @@ const dogHeight = 60;
 let dogX = 50;
 let dogY = canvas.height - dogHeight;
 let velocityY = 0;
-const gravity = 1.5;
-const jumpPower = -18;
+const gravity = 1.0;    // smoother fall
+const jumpPower = -20;  // higher jump
 
 // Obstacles
 let obstacles = [];
@@ -127,6 +127,11 @@ function showGameOver() {
   ctx.fillText("Game Over!", canvas.width / 2, canvas.height / 2 - 30);
   ctx.fillText("Final Score: " + score, canvas.width / 2, canvas.height / 2);
   ctx.fillText("Press SPACE to Restart", canvas.width / 2, canvas.height / 2 + 40);
+
+  // Popup with score
+  setTimeout(() => {
+    alert("🎉 Your Score: " + score);
+  }, 200);
 }
 
 // Initial message
