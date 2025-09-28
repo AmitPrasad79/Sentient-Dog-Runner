@@ -1,156 +1,161 @@
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-const scoreEl = document.getElementById('score');
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
-const W = canvas.width;
-const H = canvas.height;
+// Game state
+let player, obstacles, score, highScore, gameOver;
+let obstacleSpeed, obstacleBaseSpeed, obstacleMaxSpeed, speedIncreaseRate;
 
-let img = new Image();
-img.src = '/assets/dog.png';
+// Load dog sprite
+const dogImg = new Image();
+dogImg.src = "assets/dog.png"; // make sure this is transparent PNG
 
-const groundY = H - 40;
-let player = {
-  x: 50,
-  y: groundY,
-  w: 90,
-  h: 90,
-  vy: 0,
-  gravity: 0.9,
-  jumpForce: -14,
-  onGround: true,
-  runPhase: 0
-};
-
-let obstacles = [];
-let spawnTimer = 0;
-let speed = 4;
-let score = 0;
-let running = true;
-
-function reset() {
-  obstacles = [];
-  spawnTimer = 0;
-  speed = 4;
-  score = 0;
-  player.y = groundY;
-  player.vy = 0;
-  running = true;
+// Player object
+function resetPlayer() {
+    player = {
+        x: 50,
+        y: canvas.height - 100,
+        w: 60,
+        h: 60,
+        vy: 0,
+        gravity: 0.6,
+        jumpPower: -12,
+        grounded: false,
+    };
 }
 
-function spawnObstacle(){
-  const size = 20 + Math.random()*30;
-  obstacles.push({ x: W + 10, y: groundY + 50 - size, w: size, h: size });
+// Reset game
+function resetGame() {
+    resetPlayer();
+    obstacles = [];
+    score = 0;
+    gameOver = false;
+    obstacleBaseSpeed = 3;       // starting speed
+    obstacleMaxSpeed = 14;       // max speed
+    obstacleSpeed = obstacleBaseSpeed;
+    speedIncreaseRate = 0.002;   // ramp up rate
 }
 
-function update(){
-  if(!running) return;
-  // player physics
-  player.vy += player.gravity;
-  player.y += player.vy;
-  if(player.y >= groundY){
-    player.y = groundY;
-    player.vy = 0;
-    player.onGround = true;
-  } else player.onGround = false;
-
-  // obstacle logic
-  spawnTimer--;
-  if(spawnTimer <= 0){
-    spawnObstacle();
-    spawnTimer = 60 + Math.floor(Math.random()*80) - Math.floor(score/100);
-    if(spawnTimer < 30) spawnTimer = 30;
-  }
-  for(let i=obstacles.length-1;i>=0;i--){
-    obstacles[i].x -= speed;
-    if(obstacles[i].x + obstacles[i].w < 0) obstacles.splice(i,1);
-  }
-
-  // collision
-  for(let o of obstacles){
-    if(rectIntersect(player.x, player.y - player.h + 20, player.w, player.h, o.x, o.y-o.h, o.w, o.h)){
-      running = false;
+// Jump
+function jump() {
+    if (player.grounded && !gameOver) {
+        player.vy = player.jumpPower;
+        player.grounded = false;
     }
-  }
-
-  // scoring and speed up
-  score += 1;
-  if(score % 200 === 0) speed += 0.2;
-  scoreEl.textContent = Math.floor(score/10);
-  player.runPhase += 0.25;
-}
-
-function rectIntersect(ax,ay,aw,ah,bx,by,bw,bh){
-  return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
-}
-
-function draw(){
-  ctx.clearRect(0,0,W,H);
-
-  // ground
-  ctx.fillStyle = '#6b8e23';
-  ctx.fillRect(0, groundY + player.h/2 + 10, W, H);
-
-  // draw player with simple "running" bob animation using runPhase
-  const bob = Math.sin(player.runPhase) * 6;
-  const tilt = Math.sin(player.runPhase) * 0.06;
-  const drawX = player.x;
-  const drawY = player.y - player.h + 20 + bob;
-  ctx.save();
-  ctx.translate(drawX + player.w/2, drawY + player.h/2);
-  ctx.rotate(tilt);
-  ctx.drawImage(img, -player.w/2, -player.h/2, player.w, player.h);
-  ctx.restore();
-
-  // obstacles
-  ctx.fillStyle = '#8b4513';
-  for(let o of obstacles){
-    ctx.fillRect(o.x, o.y - o.h, o.w, o.h);
-  }
-
-  // game over overlay
-  if(!running){
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(0,0,W,H);
-    ctx.fillStyle = '#fff';
-    ctx.font = '24px Arial';
-    ctx.fillText('Game Over - Press R to restart', 180, 100);
-  }
-
-  // >>> ADD YOUR HANDLE HERE <<<
-  ctx.fillStyle = "#555";
-  ctx.font = "14px Arial";
-  ctx.fillText("0xBalls", W - 100, H - 10);
-}
-
-
-function loop(){
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
-
-document.addEventListener('keydown', e=>{
-  if(e.code === 'Space' || e.code === 'ArrowUp'){
-    if(player.onGround){
-      player.vy = player.jumpForce;
-      player.onGround = false;
+    if (gameOver) {
+        resetGame();
     }
-  }
-  if(e.key === 'r' || e.key === 'R'){
-    reset();
-  }
-});
+}
 
-canvas.addEventListener('click', ()=>{
-  if(player.onGround){
-    player.vy = player.jumpForce;
-    player.onGround = false;
-  } else if(!running){
-    reset();
-  }
+// Handle input
+document.addEventListener("keydown", (e) => {
+    if (e.code === "Space" || e.code === "ArrowUp") jump();
 });
+canvas.addEventListener("click", jump);
 
-// Start when image loaded
-img.onload = function(){
-  loop();
-};
+// Spawn obstacles
+function spawnObstacle() {
+    const height = 40 + Math.random() * 30;
+    obstacles.push({
+        x: canvas.width,
+        y: canvas.height - height,
+        w: 30,
+        h: height,
+    });
+}
+setInterval(spawnObstacle, 1800);
+
+// Collision detection
+function checkCollision(a, b) {
+    return (
+        a.x < b.x + b.w &&
+        a.x + a.w > b.x &&
+        a.y < b.y + b.h &&
+        a.y + a.h > b.y
+    );
+}
+
+// Update game logic
+function update() {
+    if (!gameOver) {
+        // Gravity
+        player.vy += player.gravity;
+        player.y += player.vy;
+
+        if (player.y + player.h >= canvas.height) {
+            player.y = canvas.height - player.h;
+            player.vy = 0;
+            player.grounded = true;
+        }
+
+        // Increase speed gradually
+        if (obstacleSpeed < obstacleMaxSpeed) {
+            obstacleSpeed += speedIncreaseRate;
+        }
+
+        // Move obstacles
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+            obstacles[i].x -= obstacleSpeed;
+            if (obstacles[i].x + obstacles[i].w < 0) {
+                obstacles.splice(i, 1);
+                score++;
+                if (!highScore || score > highScore) {
+                    highScore = score;
+                }
+            }
+        }
+
+        // Check collisions
+        for (let obs of obstacles) {
+            if (checkCollision(player, obs)) {
+                gameOver = true;
+            }
+        }
+    }
+}
+
+// Draw everything
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Background
+    ctx.fillStyle = "#f0f8ff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Player (dog)
+    ctx.drawImage(dogImg, player.x, player.y, player.w, player.h);
+
+    // Obstacles
+    ctx.fillStyle = "#8b4513";
+    for (let obs of obstacles) {
+        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+    }
+
+    // Score
+    ctx.fillStyle = "black";
+    ctx.font = "18px Arial";
+    ctx.fillText("Score: " + score, 10, 25);
+
+    if (highScore) {
+        ctx.fillText("High Score: " + highScore, 10, 50);
+    }
+
+    // Game Over
+    if (gameOver) {
+        ctx.fillStyle = "red";
+        ctx.font = "32px Arial";
+        ctx.fillText("Game Over", canvas.width / 2 - 90, canvas.height / 2);
+        ctx.font = "20px Arial";
+        ctx.fillText("Press Space / Click to Restart", canvas.width / 2 - 150, canvas.height / 2 + 40);
+    }
+}
+
+// Game loop
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+// Start
+resetGame();
+gameLoop();
