@@ -12,7 +12,7 @@ let dogX = 50;
 let dogY = canvas.height - dogHeight;
 let velocityY = 0;
 const gravity = 5.0;    // smoother fall
-const jumpPower = -50;  // higher jump
+const jumpPower = 50;  // higher jump
 
 // Obstacles
 let obstacles = [];
