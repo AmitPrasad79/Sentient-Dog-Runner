@@ -97,7 +97,7 @@ function draw(){
   const drawY = player.y - player.h + 20 + bob;
   ctx.save();
   ctx.translate(drawX + player.w/2, drawY + player.h/2);
-  ctx.rotate(tilt);
+  // remove tilt (keeps dog upright)
   ctx.drawImage(img, -player.w/2, -player.h/2, player.w, player.h);
   ctx.restore();
 
