@@ -1,43 +1,40 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>🐶 Sentient Dog Runner</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dog Runner - Debug Friendly</title>
   <style>
-    body {
-      text-align: center;
-      font-family: Arial, sans-serif;
-      background: #fafafa;
-    }
-    canvas {
-      border: 2px solid #333;
-      display: block;
-      margin: 20px auto;
-      background: white;
-    }
-    #score {
-      font-size: 18px;
-      font-weight: bold;
-    }
-    #footer {
-      margin-top: 20px;
-      font-size: 14px;
-    }
+    body { font-family: Arial, sans-serif; text-align:center; background:#fafafa; margin:0; padding:20px;}
+    canvas { display:block; margin:14px auto; border:1px solid #ccc; background:#fff; }
+    .overlay { position:relative; width:800px; margin:0 auto; }
+    #overlayCard { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); 
+      background:rgba(0,0,0,0.85); color:#fff; padding:18px; border-radius:10px; display:flex; flex-direction:column; gap:8px; }
+    #overlayButton { background:#1DA1F2; color:#fff; border:none; padding:8px 12px; border-radius:6px; font-weight:700; }
+    #scoreDisplay { font-weight:700; margin-top:8px; }
+    @media (max-width:820px) { canvas, .overlay { width:95%; } }
   </style>
 </head>
 <body>
-  <h2>🐶 Sentient Dog Runner</h2>
-  <p>Press <b>Space</b> to Jump</p>
-  
-  <canvas id="gameCanvas" width="800" height="250"></canvas>
-  
-  <p id="score">Score: 0</p>
-  
-  <div id="footer">
-    Made with ❤️ by <a href="https://twitter.com/0xBalls" target="_blank">@0xBalls</a>
+  <h2>🐶 Dog Runner — debug build</h2>
+  <div class="overlay">
+    <canvas id="gameCanvas" width="800" height="260"></canvas>
+
+    <!-- overlay shown on load / game over -->
+    <div id="overlayCard" style="display:flex;">
+      <div>
+        <div id="overlayTitle">Press SPACE or Tap to Start</div>
+        <div id="overlayText" style="opacity:0.9; font-size:14px; margin-top:6px;">This build logs debug messages to the console.</div>
+        <div style="margin-top:10px;">
+          <button id="overlayButton">Start (SPACE / Tap)</button>
+        </div>
+      </div>
+    </div>
   </div>
-  
-  <!-- Load JS file -->
+
+  <div id="scoreDisplay">Score: 0</div>
+
+  <!-- load script AFTER canvas and overlay -->
   <script src="main.js"></script>
 </body>
 </html>
