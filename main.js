@@ -8,7 +8,6 @@ dogImg.src = "assets/dog.png"; // make sure dog.png is in same folder
 // Dog settings
 const dogWidth = 60;
 const dogHeight = 60;
-let dogX = 50;
 let dogY = canvas.height - dogHeight;
 let velocityY = 0;
 const gravity = 0.7;
