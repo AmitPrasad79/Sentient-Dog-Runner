@@ -1,125 +1,43 @@
-// main.js
-
-const canvas = document.querySelector("canvas");
-const ctx = canvas.getContext("2d");
-
-canvas.width = 800;
-canvas.height = 200;
-
-let gravity = 0.6;
-let gameSpeed = 2;        // starting speed
-let speedIncrease = 0.002; // how fast the game speeds up
-
-let score = 0;
-let gameOver = false;
-
-// Dog player
-const dog = {
-  x: 50,
-  y: 150,
-  width: 40,
-  height: 40,
-  dy: 0,
-  jumping: false,
-};
-
-const dogImg = new Image();
-dogImg.src = "dog.png"; // <-- make sure dog.png is in same folder
-
-// Obstacles
-let obstacles = [];
-
-class Obstacle {
-  constructor() {
-    this.width = 20;
-    this.height = 30;
-    this.x = canvas.width;
-    this.y = canvas.height - this.height - 20;
-  }
-
-  update() {
-    this.x -= gameSpeed;
-    this.draw();
-  }
-
-  draw() {
-    ctx.fillStyle = "brown";
-    ctx.fillRect(this.x, this.y, this.width, this.height);
-  }
-}
-
-function spawnObstacle() {
-  obstacles.push(new Obstacle());
-}
-
-function jump() {
-  if (!dog.jumping) {
-    dog.dy = -10;
-    dog.jumping = true;
-  }
-}
-
-// Input
-document.addEventListener("keydown", (e) => {
-  if (e.code === "Space" || e.code === "ArrowUp") {
-    jump();
-  }
-});
-
-canvas.addEventListener("click", jump);
-
-// Main update loop
-function update() {
-  if (gameOver) return;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Dog physics
-  dog.y += dog.dy;
-  dog.dy += gravity;
-
-  if (dog.y + dog.height >= canvas.height - 20) {
-    dog.y = canvas.height - dog.height - 20;
-    dog.dy = 0;
-    dog.jumping = false;
-  }
-
-  // Draw dog
-  ctx.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height);
-
-  // Obstacles
-  if (Math.random() < 0.01) {
-    spawnObstacle();
-  }
-
-  for (let i = 0; i < obstacles.length; i++) {
-    obstacles[i].update();
-
-    // Collision detection
-    if (
-      dog.x < obstacles[i].x + obstacles[i].width &&
-      dog.x + dog.width > obstacles[i].x &&
-      dog.y < obstacles[i].y + obstacles[i].height &&
-      dog.y + dog.height > obstacles[i].y
-    ) {
-      gameOver = true;
-      alert("Game Over! Final Score: " + score);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>🐶 Sentient Dog Runner</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+      background: #fafafa;
     }
-  }
-
-  // Increase difficulty
-  gameSpeed += speedIncrease;
-
-  // Score
-  score++;
-  ctx.fillStyle = "black";
-  ctx.font = "16px Arial";
-  ctx.fillText("Score: " + score, 10, 20);
-
-  requestAnimationFrame(update);
-}
-
-// Start game once dog image is loaded
-dogImg.onload = () => {
-  update();
-};
+    canvas {
+      border: 2px solid #333;
+      display: block;
+      margin: 20px auto;
+      background: white;
+    }
+    #score {
+      font-size: 18px;
+      font-weight: bold;
+    }
+    #footer {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h2>🐶 Sentient Dog Runner</h2>
+  <p>Press <b>Space</b> to Jump</p>
+  
+  <canvas id="gameCanvas" width="800" height="250"></canvas>
+  
+  <p id="score">Score: 0</p>
+  
+  <div id="footer">
+    Made with ❤️ by <a href="https://twitter.com/YourHandle" target="_blank">@YourHandle</a>
+  </div>
+  
+  <!-- Load JS file -->
+  <script src="game.js"></script>
+</body>
+</html>
