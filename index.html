@@ -42,6 +42,14 @@
     #restartBtn:hover {
       background: #ff2a2a;
     }
+    #twitter {
+      margin-top: 10px;
+    }
+    #twitter a {
+      color: #1DA1F2;
+      text-decoration: none;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -50,6 +58,7 @@
   
   <canvas id="gameCanvas" width="600" height="200"></canvas>
   <p id="scoreText">Score: 0</p>
+  <p id="twitter">Made by <a href="https://twitter.com/YOUR_HANDLE" target="_blank">@YOUR_HANDLE</a></p>
 
   <div id="gameOverScreen">
     <h2>Game Over!</h2>
@@ -65,10 +74,14 @@
     const finalScore = document.getElementById("finalScore");
     const restartBtn = document.getElementById("restartBtn");
 
+    // Load dog image (replace with your sprite if you have)
+    const dogImg = new Image();
+    dogImg.src = "dog.png";  // <-- replace with your uploaded dog sprite path
+
     let dog, obstacles, score, gameSpeed, gravity, isGameOver;
 
     function initGame() {
-      dog = { x: 30, y: 150, width: 20, height: 20, velocityY: 0, jumpPower: -8 };
+      dog = { x: 30, y: 150, width: 30, height: 30, velocityY: 0, jumpPower: -8 };
       obstacles = [];
       score = 0;
       gameSpeed = 3;
@@ -121,9 +134,11 @@
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "brown";
-      ctx.fillRect(dog.x, dog.y, dog.width, dog.height);
 
+      // Draw dog sprite
+      ctx.drawImage(dogImg, dog.x, dog.y, dog.width, dog.height);
+
+      // Draw obstacles
       ctx.fillStyle = "black";
       obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.width, o.height));
     }
