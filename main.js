@@ -39,9 +39,9 @@ document.addEventListener("keydown", function (e) {
   }
 });
 
-// Mobile & touch
-canvas.addEventListener("touchstart", handleInput);
-canvas.addEventListener("mousedown", handleInput);
+// Mobile & click/tap (anywhere, not just canvas)
+document.addEventListener("touchstart", handleInput);
+document.addEventListener("mousedown", handleInput);
 
 function handleInput() {
   if (!gameStarted) {
@@ -57,6 +57,7 @@ function handleInput() {
     velocityY = jumpPower;
   }
 }
+
 // -------------------------------------------------
 
 // Reset game state
