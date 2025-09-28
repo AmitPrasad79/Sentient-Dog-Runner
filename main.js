@@ -11,8 +11,8 @@ const dogHeight = 60;
 let dogX = 50;
 let dogY = canvas.height - dogHeight;
 let velocityY = 0;
-const gravity = 1.0;
-const jumpPower = -20;
+const gravity = 0.7;
+const jumpPower = -16;
 let jumpForward = 0; // horizontal boost when jumping
 
 // Obstacles
