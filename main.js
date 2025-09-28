@@ -11,8 +11,9 @@ const dogHeight = 60;
 let dogX = 50;
 let dogY = canvas.height - dogHeight;
 let velocityY = 0;
-const gravity = 5.0;    // smoother fall
-const jumpPower = 50;  // higher jump
+const gravity = 1.0;
+const jumpPower = -20;
+let jumpForward = 0; // horizontal boost when jumping
 
 // Obstacles
 let obstacles = [];
@@ -45,6 +46,7 @@ document.addEventListener("keydown", function (e) {
       requestAnimationFrame(gameLoop);
     } else if (dogY >= canvas.height - dogHeight) {
       velocityY = jumpPower;
+      jumpForward = 5; // move forward a bit during jump
     }
   }
 });
@@ -54,6 +56,7 @@ function resetGame() {
   dogX = 50;
   dogY = canvas.height - dogHeight;
   velocityY = 0;
+  jumpForward = 0;
   obstacles = [];
   frameCount = 0;
   score = 0;
@@ -75,6 +78,11 @@ function gameLoop() {
   if (dogY > canvas.height - dogHeight) {
     dogY = canvas.height - dogHeight;
     velocityY = 0;
+    jumpForward = 0; // reset forward boost after landing
+    dogX = 50; // snap back to base
+  } else {
+    dogX += jumpForward;
+    if (dogX > 70) dogX -= 1; // slowly pull back
   }
 
   // Draw dog
@@ -116,22 +124,18 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// Game Over screen
+// Game Over popup
 function showGameOver() {
-  ctx.fillStyle = "rgba(0,0,0,0.5)";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "rgba(0,0,0,0.7)";
+  ctx.fillRect(canvas.width / 2 - 150, canvas.height / 2 - 80, 300, 160);
 
   ctx.fillStyle = "white";
-  ctx.font = "30px Arial";
+  ctx.font = "26px Arial";
   ctx.textAlign = "center";
   ctx.fillText("Game Over!", canvas.width / 2, canvas.height / 2 - 30);
-  ctx.fillText("Final Score: " + score, canvas.width / 2, canvas.height / 2);
-  ctx.fillText("Press SPACE to Restart", canvas.width / 2, canvas.height / 2 + 40);
-
-  // Popup with score
-  setTimeout(() => {
-    alert("🎉 Your Score: " + score);
-  }, 200);
+  ctx.fillText("Score: " + score, canvas.width / 2, canvas.height / 2 + 10);
+  ctx.font = "20px Arial";
+  ctx.fillText("Press SPACE to Restart", canvas.width / 2, canvas.height / 2 + 50);
 }
 
 // Initial message
