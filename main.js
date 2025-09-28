@@ -1,161 +1,117 @@
-const canvas = document.getElementById("gameCanvas");
-const ctx = canvas.getContext("2d");
+window.onload = function () {
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
 
-// Game state
-let player, obstacles, score, highScore, gameOver;
-let obstacleSpeed, obstacleBaseSpeed, obstacleMaxSpeed, speedIncreaseRate;
+  // Game settings
+  let gravity = 0.6;
+  let jump = -12;
+  let obstacles = [];
+  let frame = 0;
+  let score = 0;
+  let gameSpeed = 3;         // starting slow
+  let speedIncrease = 0.002; // gradual increase
 
-// Load dog sprite
-const dogImg = new Image();
-dogImg.src = "assets/dog.png"; // make sure this is transparent PNG
+  // Dog character
+  const dog = {
+    x: 50,
+    y: 150,
+    width: 40,
+    height: 40,
+    dy: 0,
+    jumping: false,
+    img: new Image(),
+  };
+  dog.img.src = "./assets/dog.png"; // make sure file exists
 
-// Player object
-function resetPlayer() {
-    player = {
-        x: 50,
-        y: canvas.height - 100,
-        w: 60,
-        h: 60,
-        vy: 0,
-        gravity: 0.6,
-        jumpPower: -12,
-        grounded: false,
-    };
-}
-
-// Reset game
-function resetGame() {
-    resetPlayer();
-    obstacles = [];
-    score = 0;
-    gameOver = false;
-    obstacleBaseSpeed = 3;       // starting speed
-    obstacleMaxSpeed = 14;       // max speed
-    obstacleSpeed = obstacleBaseSpeed;
-    speedIncreaseRate = 0.002;   // ramp up rate
-}
-
-// Jump
-function jump() {
-    if (player.grounded && !gameOver) {
-        player.vy = player.jumpPower;
-        player.grounded = false;
+  // Controls
+  document.addEventListener("keydown", function (e) {
+    if ((e.code === "Space" || e.code === "ArrowUp") && !dog.jumping) {
+      dog.dy = jump;
+      dog.jumping = true;
     }
-    if (gameOver) {
-        resetGame();
+  });
+
+  document.addEventListener("click", function () {
+    if (!dog.jumping) {
+      dog.dy = jump;
+      dog.jumping = true;
     }
-}
+  });
 
-// Handle input
-document.addEventListener("keydown", (e) => {
-    if (e.code === "Space" || e.code === "ArrowUp") jump();
-});
-canvas.addEventListener("click", jump);
-
-// Spawn obstacles
-function spawnObstacle() {
-    const height = 40 + Math.random() * 30;
-    obstacles.push({
-        x: canvas.width,
-        y: canvas.height - height,
-        w: 30,
-        h: height,
-    });
-}
-setInterval(spawnObstacle, 1800);
-
-// Collision detection
-function checkCollision(a, b) {
-    return (
-        a.x < b.x + b.w &&
-        a.x + a.w > b.x &&
-        a.y < b.y + b.h &&
-        a.y + a.h > b.y
-    );
-}
-
-// Update game logic
-function update() {
-    if (!gameOver) {
-        // Gravity
-        player.vy += player.gravity;
-        player.y += player.vy;
-
-        if (player.y + player.h >= canvas.height) {
-            player.y = canvas.height - player.h;
-            player.vy = 0;
-            player.grounded = true;
-        }
-
-        // Increase speed gradually
-        if (obstacleSpeed < obstacleMaxSpeed) {
-            obstacleSpeed += speedIncreaseRate;
-        }
-
-        // Move obstacles
-        for (let i = obstacles.length - 1; i >= 0; i--) {
-            obstacles[i].x -= obstacleSpeed;
-            if (obstacles[i].x + obstacles[i].w < 0) {
-                obstacles.splice(i, 1);
-                score++;
-                if (!highScore || score > highScore) {
-                    highScore = score;
-                }
-            }
-        }
-
-        // Check collisions
-        for (let obs of obstacles) {
-            if (checkCollision(player, obs)) {
-                gameOver = true;
-            }
-        }
+  // Obstacle
+  class Obstacle {
+    constructor() {
+      this.width = 20 + Math.random() * 20;
+      this.height = 20 + Math.random() * 40;
+      this.x = canvas.width;
+      this.y = canvas.height - this.height;
     }
-}
 
-// Draw everything
-function draw() {
+    draw() {
+      ctx.fillStyle = "#8B4513";
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+
+    update() {
+      this.x -= gameSpeed;
+      this.draw();
+    }
+  }
+
+  // Draw Dog
+  function drawDog() {
+    ctx.drawImage(dog.img, dog.x, dog.y, dog.width, dog.height);
+  }
+
+  // Game Loop
+  function update() {
+    frame++;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Background
-    ctx.fillStyle = "#f0f8ff";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Dog physics
+    dog.y += dog.dy;
+    dog.dy += gravity;
 
-    // Player (dog)
-    ctx.drawImage(dogImg, player.x, player.y, player.w, player.h);
+    if (dog.y > canvas.height - dog.height) {
+      dog.y = canvas.height - dog.height;
+      dog.dy = 0;
+      dog.jumping = false;
+    }
+
+    drawDog();
 
     // Obstacles
-    ctx.fillStyle = "#8b4513";
-    for (let obs of obstacles) {
-        ctx.fillRect(obs.x, obs.y, obs.w, obs.h);
+    if (frame % 100 === 0) {
+      obstacles.push(new Obstacle());
     }
 
-    // Score
-    ctx.fillStyle = "black";
-    ctx.font = "18px Arial";
-    ctx.fillText("Score: " + score, 10, 25);
+    obstacles.forEach((obs, index) => {
+      obs.update();
 
-    if (highScore) {
-        ctx.fillText("High Score: " + highScore, 10, 50);
-    }
+      // Collision
+      if (
+        dog.x < obs.x + obs.width &&
+        dog.x + dog.width > obs.x &&
+        dog.y < obs.y + obs.height &&
+        dog.y + dog.height > obs.y
+      ) {
+        alert("Game Over! Final Score: " + score);
+        document.location.reload();
+      }
 
-    // Game Over
-    if (gameOver) {
-        ctx.fillStyle = "red";
-        ctx.font = "32px Arial";
-        ctx.fillText("Game Over", canvas.width / 2 - 90, canvas.height / 2);
-        ctx.font = "20px Arial";
-        ctx.fillText("Press Space / Click to Restart", canvas.width / 2 - 150, canvas.height / 2 + 40);
-    }
-}
+      // Remove passed obstacles
+      if (obs.x + obs.width < 0) {
+        obstacles.splice(index, 1);
+        score++;
+        document.getElementById("score").innerText = "Score: " + score;
+      }
+    });
 
-// Game loop
-function gameLoop() {
-    update();
-    draw();
-    requestAnimationFrame(gameLoop);
-}
+    // Increase game speed gradually
+    gameSpeed += speedIncrease;
 
-// Start
-resetGame();
-gameLoop();
+    requestAnimationFrame(update);
+  }
+
+  update();
+};

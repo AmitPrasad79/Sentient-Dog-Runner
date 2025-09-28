@@ -1,35 +1,49 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sentient Dog Runner</title>
-  <link rel="manifest" href="/manifest.json">
-  <link rel="stylesheet" href="/style.css">
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+      background: #f0f6ff;
+    }
+    canvas {
+      display: block;
+      margin: 20px auto;
+      border: 1px solid #ccc;
+      background: white;
+    }
+    #score {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .footer {
+      margin-top: 10px;
+    }
+    .footer a {
+      color: #007bff;
+      text-decoration: none;
+    }
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
   <h1>Sentient Dog Runner</h1>
   <p>Press Space / Up Arrow or tap/click to jump. Game works offline after first visit.</p>
-  <canvas id="game" width="800" height="200"></canvas>
-  <div id="info">Score: <span id="score">0</span></div>
-
-  <!-- Attribution / Twitter link -->
-  <div style="text-align:center; margin-top:10px;">
-  <a href="https://x.com/0xBalls" target="_blank" 
-     style="color:#1DA1F2; font-family: Arial; font-size:14px; text-decoration:none;">
-     Made by 0xBalls
-  </a>
-  </div>
   
-  <script type="module" src="/main.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').then(function(reg){
-        console.log('ServiceWorker registered', reg);
-      }).catch(function(err){
-        console.warn('ServiceWorker failed', err);
-      });
-    }
-  </script>
+  <canvas id="gameCanvas" width="800" height="200"></canvas>
+  
+  <p id="score">Score: 0</p>
+  <div class="footer">
+    Made by <a href="https://x.com/0xBalls" target="_blank">0xBalls</a>
+  </div>
+
+  <!-- Game script must load AFTER canvas -->
+  <script src="main.js"></script>
 </body>
 </html>
