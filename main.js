@@ -3,7 +3,7 @@ const ctx = canvas.getContext("2d");
 
 // Dog image
 const dogImg = new Image();
-dogImg.src = "dog.png"; // make sure dog.png is in the same folder
+dogImg.src = "assets/dog.png"; // make sure dog.png is in the same folder
 
 // Dog settings
 const dogWidth = 60;
