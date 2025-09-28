@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sentient Dog Runner (Offline)</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <h1>Sentient Dog Runner</h1>
+  <p>Press Space / Up Arrow or tap/click to jump. Game works offline after first visit.</p>
+  <canvas id="game" width="800" height="200"></canvas>
+  <div id="info">Score: <span id="score">0</span></div>
+
+  <script type="module" src="/main.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').then(function(reg){
+        console.log('ServiceWorker registered', reg);
+      }).catch(function(err){
+        console.warn('ServiceWorker failed', err);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+body { font-family: Arial, sans-serif; display:flex; flex-direction:column; align-items:center; padding:20px; background:#f0f6ff; }
+h1 { margin: 0 0 6px 0; }
+canvas { background:#fff; border:1px solid #ccc; margin-top:10px; }
+#info { margin-top:8px; font-weight:600; }
