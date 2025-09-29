@@ -4,7 +4,7 @@ Run, jump, survive.
 
 You are a small sentient dog with big dreams, stuck in a world of endless obstacles.  
 
-This game is my take on the classic offline dinosaur runner — but with more personality, smoother jumps, and a four-legged friend who actually runs on two feet.  
+This game is my take on the classic offline dinosaur runner, but with more personality, smoother jumps, and a four-legged friend who actually runs on two feet.  
 
 ---
 
