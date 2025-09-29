@@ -6,10 +6,13 @@ You are a small sentient dog with big dreams, stuck in a world of endless obstac
 This game is my take on the classic offline dinosaur runner — but with more personality, smoother jumps, and a four-legged friend who actually runs on two feet.
 
 🎮 How to Play
+
 • Spacebar (desktop) or Tap anywhere (mobile) to jump.
+
 • Avoid the obstacles — the longer you survive, the faster the world moves.
 
 • Your score climbs with every obstacle passed.
+
 • Miss a jump and it’s game over.
 
 🌟 Highlights
