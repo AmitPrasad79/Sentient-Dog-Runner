@@ -6,7 +6,7 @@ dogImg.src = "assets/dog.png";
 
 const dogWidth = 60;
 const dogHeight = 60;
-let dogX = 50;  
+let dogX = 50; 
 let dogY = canvas.height - dogHeight;
 let velocityY = 0;
 const gravity = 0.6;
@@ -67,6 +67,7 @@ function gameLoop() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  velocityY += gravity;
   dogY += velocityY;
 
   if (dogY > canvas.height - dogHeight) {
