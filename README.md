@@ -14,6 +14,8 @@ This game is my take on the classic offline dinosaur runner, but with more perso
 - Your score climbs with every obstacle passed.  
 - Miss a jump and it’s game over.  
 
+Link: https://sentient-dog-runner.vercel.app
+
 ---
 
 ## 🌟 Highlights  
