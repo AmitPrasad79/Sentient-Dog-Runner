@@ -1,36 +1,47 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-const dogImg = new Image();
-dogImg.src = "assets/dog.png";
+// Load dog frames (dog1.png ... dog4.png in assets/)
+const dogFrames = [];
+for (let i = 1; i <= 4; i++) {
+  const img = new Image();
+  img.src = `assets/dog${i}.png`;
+  dogFrames.push(img);
+}
 
+let currentFrame = 0;
+let frameTick = 0;
+
+// Dog settings
 const dogWidth = 60;
 const dogHeight = 60;
-let dogX = 50; 
+let dogX = 50;
 let dogY = canvas.height - dogHeight;
 let velocityY = 0;
 const gravity = 0.6;
 const jumpPower = -15;
 
+// Obstacles
 let obstacles = [];
 const obstacleWidth = 20;
 const obstacleHeight = 40;
 let frameCount = 0;
 
+// Score
 let score = 0;
 
+// Game state
 let gameOver = false;
 let gameStarted = false;
 
+// Speed control
 let gameSpeed = 3;
 let speedIncrease = 0.002;
 
+// Input handlers (keyboard, touch, click)
 document.addEventListener("keydown", function (e) {
-  if (e.code === "Space") {
-    handleInput();
-  }
+  if (e.code === "Space") handleInput();
 });
-
 document.addEventListener("touchstart", handleInput);
 document.addEventListener("mousedown", handleInput);
 
@@ -49,6 +60,7 @@ function handleInput() {
   }
 }
 
+// Reset game
 function resetGame() {
   dogX = 50;
   dogY = canvas.height - dogHeight;
@@ -59,6 +71,7 @@ function resetGame() {
   gameSpeed = 3;
 }
 
+// Main game loop
 function gameLoop() {
   if (gameOver) {
     showGameOver();
@@ -67,16 +80,22 @@ function gameLoop() {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // Dog physics
   velocityY += gravity;
   dogY += velocityY;
-
   if (dogY > canvas.height - dogHeight) {
     dogY = canvas.height - dogHeight;
     velocityY = 0;
   }
 
-  ctx.drawImage(dogImg, dogX, dogY, dogWidth, dogHeight);
+  // Animate dog (only run animation when on ground)
+  frameTick++;
+  if (frameTick % 6 === 0 && dogY >= canvas.height - dogHeight) {
+    currentFrame = (currentFrame + 1) % dogFrames.length;
+  }
+  ctx.drawImage(dogFrames[currentFrame], dogX, dogY, dogWidth, dogHeight);
 
+  // Obstacles
   frameCount++;
   if (frameCount % 90 === 0) {
     obstacles.push({ x: canvas.width, y: canvas.height - obstacleHeight });
@@ -88,6 +107,7 @@ function gameLoop() {
     ctx.fillStyle = "black";
     ctx.fillRect(obs.x, obs.y, obstacleWidth, obstacleHeight);
 
+    // Collision detection
     if (
       dogX < obs.x + obstacleWidth &&
       dogX + dogWidth > obs.x &&
@@ -98,16 +118,20 @@ function gameLoop() {
     }
   }
 
+  // Remove off-screen obstacles
   obstacles = obstacles.filter(obs => obs.x + obstacleWidth > 0);
 
+  // Score
   score++;
   document.getElementById("score").innerText = "Score: " + score;
 
+  // Speed increase
   gameSpeed += speedIncrease;
 
   requestAnimationFrame(gameLoop);
 }
 
+// Game Over popup
 function showGameOver() {
   ctx.fillStyle = "rgba(0,0,0,0.7)";
   ctx.fillRect(canvas.width / 2 - 150, canvas.height / 2 - 80, 300, 160);
@@ -121,6 +145,7 @@ function showGameOver() {
   ctx.fillText("Tap or Press SPACE to Restart", canvas.width / 2, canvas.height / 2 + 50);
 }
 
+// Initial screen text
 ctx.fillStyle = "black";
 ctx.font = "24px Arial";
 ctx.textAlign = "center";
