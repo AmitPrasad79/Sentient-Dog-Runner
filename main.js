@@ -3,7 +3,7 @@ const ctx = canvas.getContext("2d");
 
 // Load dog frames (dog.png, dog2.png ... dog4.png)
 const dogFrames = [];
-["dog.png", "dog2.png", "dog3.png", "dog4.png"].forEach(name => {
+["dog.png", "dog2.png", "dog3.png", "dog.png", "dog4.png"].forEach(name => {
   const img = new Image();
   img.src = `assets/${name}`;
   dogFrames.push(img);
