@@ -1,13 +1,13 @@
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
-// Load dog frames (dog1.png ... dog4.png in assets/)
+// Load dog frames (dog.png, dog2.png ... dog4.png)
 const dogFrames = [];
-for (let i = 1; i <= 4; i++) {
+["dog.png", "dog2.png", "dog3.png", "dog4.png"].forEach(name => {
   const img = new Image();
-  img.src = `assets/dog${i}.png`;
+  img.src = `assets/${name}`;
   dogFrames.push(img);
-}
+});
 
 let currentFrame = 0;
 let frameTick = 0;
@@ -38,7 +38,7 @@ let gameStarted = false;
 let gameSpeed = 3;
 let speedIncrease = 0.002;
 
-// Input handlers (keyboard, touch, click)
+// Input (keyboard, touch, click)
 document.addEventListener("keydown", function (e) {
   if (e.code === "Space") handleInput();
 });
@@ -60,7 +60,6 @@ function handleInput() {
   }
 }
 
-// Reset game
 function resetGame() {
   dogX = 50;
   dogY = canvas.height - dogHeight;
@@ -71,7 +70,6 @@ function resetGame() {
   gameSpeed = 3;
 }
 
-// Main game loop
 function gameLoop() {
   if (gameOver) {
     showGameOver();
@@ -88,7 +86,7 @@ function gameLoop() {
     velocityY = 0;
   }
 
-  // Animate dog (only run animation when on ground)
+  // Animate dog (cycle frames only when running on ground)
   frameTick++;
   if (frameTick % 6 === 0 && dogY >= canvas.height - dogHeight) {
     currentFrame = (currentFrame + 1) % dogFrames.length;
@@ -118,7 +116,6 @@ function gameLoop() {
     }
   }
 
-  // Remove off-screen obstacles
   obstacles = obstacles.filter(obs => obs.x + obstacleWidth > 0);
 
   // Score
@@ -131,7 +128,6 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
-// Game Over popup
 function showGameOver() {
   ctx.fillStyle = "rgba(0,0,0,0.7)";
   ctx.fillRect(canvas.width / 2 - 150, canvas.height / 2 - 80, 300, 160);
